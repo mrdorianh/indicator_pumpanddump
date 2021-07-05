@@ -1,0 +1,33 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © mrdh2836
+
+//@version=4
+study("Pump n Dump Finder",shorttitle = 'PnD Finder', overlay = true)
+
+float dumpThresh = input(title = 'Dump Threshold (%)', defval = 1.9, step = 0.1, group = 'Threshold Percentages') / 100 * (-1)
+float pumpThresh = input(title = 'Pump Threshold (%)', defval = 2.0, step = 0.1, group = 'Threshold Percentages') / 100
+
+float current = close
+
+bool isDumping = false
+isDumping := isDumping[1]
+
+bool pumpCondition = (current - close[1]) / close[1] >= pumpThresh
+bool dumpCondition = (current - close[1]) / close[1] <= dumpThresh
+
+if(dumpCondition)
+    isDumping:= true
+
+bool dumpFinishedCondition = isDumping and close > close[1]
+
+plotshape(pumpCondition,style=shape.triangleup,color = color.green, text = 'Pump',textcolor = color.green, location = location.belowbar, size = size.normal)
+plotshape(dumpCondition,style=shape.triangledown,color = color.red, text = 'Dump',textcolor = color.red, location = location.abovebar, size = size.normal)
+plotshape(dumpFinishedCondition,style=shape.triangledown,color = color.blue, text = 'Dump Finished',textcolor = color.blue, location = location.abovebar, size = size.normal)
+
+alertcondition(pumpCondition,'Pump')
+alertcondition(dumpCondition,'Dump')
+alertcondition(dumpFinishedCondition,'Dump Finished')
+
+if(dumpFinishedCondition)
+    isDumping := false
+
